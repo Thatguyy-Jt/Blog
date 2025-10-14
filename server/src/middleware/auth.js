@@ -32,25 +32,22 @@ function requireRole(...allowedRoles) {
 
 // ✅ Set Cookie (Cross-Platform + Mobile Safe)
 function setAuthCookie(res, token) {
-  const isProd = process.env.NODE_ENV === "production";
   res.cookie("token", token, {
     httpOnly: true,
-    secure: isProd, // HTTPS only in production
-    sameSite: isProd ? "None" : "Lax", // Lax for localhost, None for cross-origin HTTPS
-    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    secure: true,        
+    sameSite: "None",    
+    maxAge: 7 * 24 * 60 * 60 * 1000, 
   });
 }
 
 // ✅ Clear Cookie
 function clearAuthCookie(res) {
-  const isProd = process.env.NODE_ENV === "production";
   res.clearCookie("token", {
     httpOnly: true,
-    secure: isProd,
-    sameSite: isProd ? "None" : "Lax",
+    secure: true,
+    sameSite: "None",
   });
 }
-
 module.exports = {
   requireAuth,
   requireRole,
