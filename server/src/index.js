@@ -1,6 +1,6 @@
-// Convert all import statements to require()
+// index.js
 const dotenv = require('dotenv');
-dotenv.config(); // This now works reliably at the top of the file
+dotenv.config(); // Load environment variables
 
 const express = require('express');
 const cors = require('cors');
@@ -20,12 +20,23 @@ app.use(morgan('dev'));
 app.use(express.json({ limit: '1mb' }));
 app.use(cookieParser());
 
-// CORS with credentials
-const clientOrigin = process.env.CLIENT_ORIGIN || 'http://localhost:5173';
+// CORS configuration to support both local and deployed frontend
+const allowedOrigins = [
+  'http://localhost:5173', // Local frontend
+  'https://themodernblog.vercel.app', // Deployed frontend
+];
+
 app.use(
   cors({
-    origin: clientOrigin,
-    credentials: true,
+    origin: function (origin, callback) {
+      // Allow requests with no origin (like Postman)
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
+    credentials: true, // Allow cookies
   })
 );
 
@@ -36,13 +47,14 @@ app.use('/api/categories', categoryRoutes);
 app.use('/api/comments', commentRoutes);
 app.use('/api/analytics', analyticsRoutes);
 
+// Health check
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok' });
 });
 
+// Start server only after DB connects
 const PORT = process.env.PORT || 5000;
 
-// Start server only after DB connects
 connectToDatabase()
   .then(() => {
     app.listen(PORT, () => {
