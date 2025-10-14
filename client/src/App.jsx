@@ -1,5 +1,6 @@
 import { Routes, Route } from 'react-router-dom'
 import { Toaster } from './components/Toaster.jsx'
+import Footer from './components/Footer.jsx'
 import Navbar from './components/Navbar.jsx'
 import Home from './pages/Home.jsx'
 import Login from './pages/Login.jsx'
@@ -61,6 +62,7 @@ export default function App() {
            }/>
     </Routes>
       </main>
+      <Footer />
       <Toaster />
      </div>
     </AuthProvider>

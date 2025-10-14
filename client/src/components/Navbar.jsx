@@ -25,12 +25,12 @@ export default function Navbar() {
     isActive ? 'text-rose-600 font-semibold' : 'text-gray-600 hover:text-gray-900 transition-fast';
 
   return (
-    <header className="border-b border-gray-200 bg-white/70 backdrop-blur supports-[backdrop-filter]:bg-white/60 sticky top-0 z-40">
+    <header className="border-b border-gray-200 bg-gray-900 backdrop-blur  sticky top-0 z-40">
       <div className="container-responsive py-4 flex items-center justify-between">
         
         {/* Logo */}
         <Link to="/" className="text-xl font-semibold tracking-tight" onClick={closeMenu}>
-          <span className="text-primary">Modern</span>
+          <span className="text-white">Modern</span>
           <span className="text-accent">Blog</span>
         </Link>
         
@@ -53,8 +53,8 @@ export default function Navbar() {
           )}
         </button>
 
-        {/* Desktop Navigation Links */}
-        <nav className="hidden sm:flex items-center gap-4">
+        Desktop Navigation Links
+        <nav className="hidden sm:flex items-center gap-4 ">
           <NavLink to="/" className={({ isActive }) => linkClass(isActive)}>
             Home
           </NavLink>
@@ -87,7 +87,7 @@ export default function Navbar() {
             <div className="flex items-center gap-2">
               <NavLink
                 to="/login"
-                className="px-3 py-1.5 rounded-md border border-gray-300 hover:bg-gray-50 transition-fast"
+                className="px-3 py-1.5 rounded-md border text-white border-gray-300 hover:bg-gray-50  hover:text-black transition-fast"
               >
                 Login
               </NavLink>
