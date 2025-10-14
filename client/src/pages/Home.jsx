@@ -1,7 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import Spinner from '../components/Spinner.jsx';
-// Assuming a clean icon library for visual flair
 import { ChevronDown, BookOpenText } from 'lucide-react'; 
 
 const API_BASE = import.meta.env.VITE_API_BASE || 'https://blog-v8hp.onrender.com';
@@ -16,7 +15,6 @@ export default function Home() {
         const queryParams = new URLSearchParams();
         let categorySlug = null;
 
-        // Find the category slug to use in the API call
         if (categoryId) {
             const cat = categories.find(c => c._id === categoryId);
             if (cat && cat.slug) {
@@ -39,7 +37,6 @@ export default function Home() {
         }
     }, [categories]);
 
-    // Fetch categories on mount
     useEffect(() => {
         fetch(`${API_BASE}/api/categories`)
             .then(r => r.json())
@@ -50,9 +47,7 @@ export default function Home() {
             });
     }, []);
 
-    // Fetch posts whenever selectedCategory or categories change
     useEffect(() => {
-        // Ensure categories are loaded before attempting to filter by slug
         if (categories.length > 0 || selectedCategory === '') {
             fetchPosts(selectedCategory);
         }
@@ -62,7 +57,6 @@ export default function Home() {
         setSelectedCategory(e.target.value);
     };
 
-    // Show initial loading spinner when no posts are loaded yet
     if (loading && posts.length === 0) return (
         <div className="flex justify-center pt-32 min-h-screen bg-gray-50"><Spinner /></div>
     );
@@ -73,14 +67,16 @@ export default function Home() {
             <section className="relative overflow-hidden rounded-3xl bg-gray-900 text-white shadow-xl">
                 {/* Subtle background texture for depth */}
                 <div className="absolute inset-0 opacity-10 bg-repeat" 
-                     style={{ backgroundImage: 'radial-gradient(rgb(31 41 55) 1px, transparent 1px)', backgroundSize: '40px 40px' }} 
+                    style={{ backgroundImage: 'radial-gradient(rgb(31 41 55) 1px, transparent 1px)', backgroundSize: '40px 40px' }} 
                 />
                 
-                <div className="relative px-6 py-20 sm:px-10 md:px-16 md:py-28 text-center">
-                    {/* <BookOpenText className="h-10 w-10 text-indigo-400 mx-auto mb-4" /> */}
+                {/* 🚀 FIX: Increased horizontal padding (px-8 up to px-24) and slightly reduced vertical padding (py-16 up to py-24) */}
+                <div className="relative px-8 py-16 sm:px-16 md:px-24 md:py-24 text-center">
+                    <BookOpenText className="h-10 w-10 text-indigo-400 mx-auto mb-4" />
                     <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">
                         The World's Best Stories
                     </h1>
+                    {/* The paragraph max-width is kept tight for readability, but the title and filter are wider */}
                     <p className="mt-4 max-w-3xl mx-auto text-gray-400 text-lg">
                         Dive into a curated collection of deep dives, tutorials, and insights. Filter by category to find your next great read.
                     </p>
@@ -99,12 +95,12 @@ export default function Home() {
                                 <option key={c._id} value={c._id}>{c.name}</option>
                             ))}
                         </select>
-                        {/* <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500 pointer-events-none" /> */}
+                        <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500 pointer-events-none" />
                     </div>
                 </div>
             </section>
 
-            {/* Posts Grid - Clean, Magazine Layout */}
+            {/* Posts Grid - Clean, Magazine Layout (Unchanged) */}
             <section className="mt-12">
                 <h2 className="text-3xl font-bold text-gray-800 mb-6 border-b border-gray-200 pb-2">
                     Latest Posts
@@ -121,7 +117,6 @@ export default function Home() {
                             <Link
                                 key={p._id}
                                 to={`/posts/${p._id}`}
-                                // Post Card Style: White background, subtle shadow, great hover effect
                                 className="block rounded-xl bg-white shadow-lg overflow-hidden border border-gray-100 hover:shadow-2xl hover:border-indigo-200 transition duration-300 group"
                             >
                                 {p.coverImageUrl && (
@@ -129,14 +124,13 @@ export default function Home() {
                                         <img
                                             src={p.coverImageUrl}
                                             alt={p.title}
-                                            // Image hover effect for a dynamic feel
                                             className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500 ease-in-out"
                                         />
                                     </div>
                                 )}
                                 
                                 <div className="p-5">
-                                    {/* Category Tags - Clean and primary-colored */}
+                                    {/* Category Tags */}
                                     <div className="flex flex-wrap gap-2 mb-3">
                                         {(p.categories || []).slice(0, 2).map((cat) => {
                                             const name = typeof cat === 'string'
@@ -153,14 +147,13 @@ export default function Home() {
                                         })}
                                     </div>
 
-                                    {/* Title - Bold and attention-grabbing */}
+                                    {/* Title */}
                                     <h3 className="text-xl font-bold text-gray-900 group-hover:text-indigo-600 transition duration-200 line-clamp-2">
                                         {p.title}
                                     </h3>
 
                                     {/* Summary/Content Snippet */}
                                     <p className="mt-2 text-base text-gray-600 line-clamp-3">
-                                        {/* Fallback to a slice of content if summary is missing */}
                                         {p.summary || (p.content ? p.content.substring(0, 150) + '...' : '')}
                                     </p>
 
