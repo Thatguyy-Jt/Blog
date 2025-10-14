@@ -6,18 +6,18 @@ const API_BASE = import.meta.env.VITE_API_BASE || "https://blog-v8hp.onrender.co
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => {
-    // ✅ Load user from localStorage on first render
     const storedUser = localStorage.getItem("user");
     return storedUser ? JSON.parse(storedUser) : null;
   });
   const [loading, setLoading] = useState(true);
 
-  // ✅ Fetch current user (to validate session)
+  // ✅ Check session on mount
   useEffect(() => {
     const fetchMe = async () => {
       try {
         const res = await fetch(`${API_BASE}/api/auth/me`, {
           credentials: "include",
+          headers: { "Cache-Control": "no-cache" },
         });
         if (res.ok) {
           const data = await res.json();
@@ -27,7 +27,8 @@ export function AuthProvider({ children }) {
           setUser(null);
           localStorage.removeItem("user");
         }
-      } catch {
+      } catch (err) {
+        console.error("Fetch /me failed:", err);
         setUser(null);
         localStorage.removeItem("user");
       } finally {
@@ -48,7 +49,7 @@ export function AuthProvider({ children }) {
     if (!res.ok) throw new Error("Login failed");
     const data = await res.json();
     setUser(data.user);
-    localStorage.setItem("user", JSON.stringify(data.user)); // persist
+    localStorage.setItem("user", JSON.stringify(data.user));
   };
 
   // ✅ REGISTER
@@ -67,12 +68,17 @@ export function AuthProvider({ children }) {
 
   // ✅ LOGOUT
   const logout = async () => {
-    await fetch(`${API_BASE}/api/auth/logout`, {
-      method: "POST",
-      credentials: "include",
-    });
-    setUser(null);
-    localStorage.removeItem("user");
+    try {
+      await fetch(`${API_BASE}/api/auth/logout`, {
+        method: "POST",
+        credentials: "include",
+      });
+    } catch (err) {
+      console.error("Logout error:", err);
+    } finally {
+      setUser(null);
+      localStorage.removeItem("user");
+    }
   };
 
   return (

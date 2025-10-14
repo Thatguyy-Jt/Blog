@@ -2,7 +2,7 @@
 const jwt = require("jsonwebtoken");
 const { User } = require("../models/User.js");
 
-// ✅ Middleware: Require Authentication
+// ✅ Require Authentication Middleware
 async function requireAuth(req, res, next) {
   try {
     const token = req.cookies?.token;
@@ -20,32 +20,32 @@ async function requireAuth(req, res, next) {
   }
 }
 
-// ✅ Middleware: Role-based Access
-function requireRole(...allowed) {
+// ✅ Role-based Access
+function requireRole(...allowedRoles) {
   return (req, res, next) => {
     if (!req.user) return res.status(401).json({ message: "Unauthorized" });
-    if (!allowed.includes(req.user.role))
+    if (!allowedRoles.includes(req.user.role))
       return res.status(403).json({ message: "Forbidden" });
     next();
   };
 }
 
-// ✅ Set authentication cookie
+// ✅ Set cookie (mobile + cross-origin safe)
 function setAuthCookie(res, token) {
   res.cookie("token", token, {
     httpOnly: true,
-    secure: true, // Always true since Render uses HTTPS
-    sameSite: "none", // Needed for cross-domain (Render ↔ Vercel)
+    secure: true, // Render uses HTTPS
+    sameSite: "None", // Capital N — critical for Safari/iOS cross-origin cookies
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
   });
 }
 
-// ✅ Clear authentication cookie
+// ✅ Clear cookie
 function clearAuthCookie(res) {
   res.clearCookie("token", {
     httpOnly: true,
     secure: true,
-    sameSite: "none",
+    sameSite: "None",
   });
 }
 
