@@ -20,7 +20,7 @@ app.use(morgan('dev'));
 app.use(express.json({ limit: '1mb' }));
 app.use(cookieParser());
 
-// CORS configuration to support both local and deployed frontend
+// ✅ CORS configuration
 const allowedOrigins = [
   'http://localhost:5173', // Local frontend
   'https://themodernblog.vercel.app', // Deployed frontend
@@ -29,10 +29,11 @@ const allowedOrigins = [
 app.use(
   cors({
     origin: function (origin, callback) {
-      // Allow requests with no origin (like Postman)
+      // Allow requests with no origin (Postman, server-side calls)
       if (!origin || allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
+        console.warn('Blocked by CORS:', origin);
         callback(new Error('Not allowed by CORS'));
       }
     },
@@ -47,21 +48,25 @@ app.use('/api/categories', categoryRoutes);
 app.use('/api/comments', commentRoutes);
 app.use('/api/analytics', analyticsRoutes);
 
-// Health check
+// ✅ Health check route (for Render)
+app.get('/', (_req, res) => {
+  res.send('Backend is running successfully 🚀');
+});
+
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok' });
 });
 
-// Start server only after DB connects
+// ✅ PORT — use Render’s assigned port
 const PORT = process.env.PORT || 5000;
 
 connectToDatabase()
   .then(() => {
-    app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
+    app.listen(PORT, '0.0.0.0', () => {
+      console.log(`✅ Server running on port ${PORT}`);
     });
   })
   .catch((error) => {
-    console.error('Failed to connect to database:', error);
+    console.error('❌ Failed to connect to database:', error);
     process.exit(1);
   });
