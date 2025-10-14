@@ -20,7 +20,7 @@ async function requireAuth(req, res, next) {
   }
 }
 
-// ✅ Role-based Access
+// ✅ Role-based Access Middleware
 function requireRole(...allowedRoles) {
   return (req, res, next) => {
     if (!req.user) return res.status(401).json({ message: "Unauthorized" });
@@ -30,22 +30,24 @@ function requireRole(...allowedRoles) {
   };
 }
 
-// ✅ Set cookie (mobile + cross-origin safe)
+// ✅ Set Cookie (Cross-Platform + Mobile Safe)
 function setAuthCookie(res, token) {
+  const isProd = process.env.NODE_ENV === "production";
   res.cookie("token", token, {
     httpOnly: true,
-    secure: true, // Render uses HTTPS
-    sameSite: "None", // Capital N — critical for Safari/iOS cross-origin cookies
+    secure: isProd, // HTTPS only in production
+    sameSite: isProd ? "None" : "Lax", // Lax for localhost, None for cross-origin HTTPS
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
   });
 }
 
-// ✅ Clear cookie
+// ✅ Clear Cookie
 function clearAuthCookie(res) {
+  const isProd = process.env.NODE_ENV === "production";
   res.clearCookie("token", {
     httpOnly: true,
-    secure: true,
-    sameSite: "None",
+    secure: isProd,
+    sameSite: isProd ? "None" : "Lax",
   });
 }
 
