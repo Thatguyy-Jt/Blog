@@ -4,7 +4,7 @@ import Spinner from '../components/Spinner.jsx';
 // Assuming a clean icon library for visual flair
 import { ChevronDown, BookOpenText } from 'lucide-react'; 
 
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:5000';
+const API_BASE = import.meta.env.VITE_API_BASE || 'https://blog-v8hp.onrender.com';
 
 export default function Home() {
     const [posts, setPosts] = useState([]);
