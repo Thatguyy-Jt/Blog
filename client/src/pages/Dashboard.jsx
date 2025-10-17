@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext.jsx'
 import Spinner from '../components/Spinner.jsx'
 import { toast } from '../components/Toaster.jsx'
 
-const API_BASE = import.meta.env.VITE_API_BASE || 'https://blog-v8hp.onrender.com'
+const API_BASE = import.meta.env.VITE_API_BASE || ''
 
 export default function Dashboard() {
   const { user } = useAuth()
