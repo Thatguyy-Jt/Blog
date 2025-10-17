@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import Spinner from '../components/Spinner.jsx';
 import { ChevronDown } from 'lucide-react';
 
-const API_BASE = import.meta.env.VITE_API_BASE || 'https://blog-v8hp.onrender.com';
+const API_BASE = import.meta.env.VITE_API_BASE || '';
 
 export default function Home() {
   const [posts, setPosts] = useState([]);

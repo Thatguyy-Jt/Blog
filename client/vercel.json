@@ -1,5 +1,6 @@
 {
   "rewrites": [
-      {"source": "/(.*)", "destination": "/"}
+    { "source": "/api/:path*", "destination": "https://blog-v8hp.onrender.com/api/:path*" },
+    { "source": "/(.*)", "destination": "/" }
   ]
 }
