@@ -34,10 +34,15 @@ function requireRole(...allowedRoles) {
 function setAuthCookie(res, token) {
     const isProduction = process.env.NODE_ENV === 'production';
     
+    // 🚨 IMPORTANT: Use your actual Render backend domain here
+    const backendDomain = 'blog-v8hp.onrender.com'; 
+
     res.cookie("token", token, {
       httpOnly: true,
-      secure: isProduction,        // Use secure only in production
-      sameSite: isProduction ? "None" : "Lax",    // Use SameSite=None only in production
+      // These three properties are mandatory for cross-origin cookies on mobile
+      secure: isProduction,        
+      sameSite: isProduction ? "None" : "Lax",   
+      domain: isProduction ? backendDomain : undefined,
       maxAge: 7 * 24 * 60 * 60 * 1000, 
     });
 }
@@ -45,11 +50,13 @@ function setAuthCookie(res, token) {
 // ✅ Clear Cookie
 function clearAuthCookie(res) {
     const isProduction = process.env.NODE_ENV === 'production';
-    
+    const backendDomain = 'blog-v8hp.onrender.com';
+
     res.clearCookie("token", {
       httpOnly: true,
       secure: isProduction,
       sameSite: isProduction ? "None" : "Lax",
+      domain: isProduction ? backendDomain : undefined,
     });
 }
 module.exports = {
