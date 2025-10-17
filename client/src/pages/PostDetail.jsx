@@ -13,6 +13,7 @@ export default function PostDetail() {
   const [isLiked, setIsLiked] = useState(false);
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
+  const currentUserId = user?._id || user?.id;
 
   // Fetch post details
   useEffect(() => {
@@ -24,7 +25,10 @@ export default function PostDetail() {
         const data = await res.json();
         setPost(data);
         setLikes(data.likes?.length || 0);
-        setIsLiked(user && data.likes?.includes(user._id));
+        setIsLiked(Boolean(currentUserId && data.likes?.some((u) => {
+          if (typeof u === 'string') return u === currentUserId;
+          return (u?._id || u?.id) === currentUserId;
+        })));
       } catch (err) {
         console.error("Failed to load post:", err);
       }
@@ -57,17 +61,33 @@ export default function PostDetail() {
     }
 
     try {
+      // Optimistic UI update
+      const previousIsLiked = isLiked;
+      const previousLikes = likes;
+      const nextIsLiked = !previousIsLiked;
+      const nextLikes = previousLikes + (nextIsLiked ? 1 : -1);
+      setIsLiked(nextIsLiked);
+      setLikes(Math.max(0, nextLikes));
+
       const res = await fetch(`${API_BASE}/api/posts/${id}/like`, {
         method: "POST",
         credentials: "include",
       });
-      if (res.ok) {
-        const data = await res.json();
-        setLikes(data.likesCount);
-        setIsLiked(data.isLiked);
+      if (!res.ok) {
+        // Revert on failure
+        setIsLiked(previousIsLiked);
+        setLikes(previousLikes);
+        return;
       }
+      const data = await res.json();
+      // Trust server response to finalize state
+      if (typeof data.likesCount === 'number') setLikes(data.likesCount);
+      if (typeof data.isLiked === 'boolean') setIsLiked(data.isLiked);
     } catch (err) {
       console.error("Failed to like post:", err);
+      // Revert on error
+      setIsLiked((prev) => !prev);
+      setLikes((prev) => Math.max(0, prev - 1));
     }
   };
 
@@ -87,10 +107,11 @@ export default function PostDetail() {
         credentials: "include",
         body: JSON.stringify({ content: newComment }),
       });
-      if (res.ok) {
-        setNewComment("");
-        fetchComments(); // Refresh comments after posting
-      }
+      if (!res.ok) return;
+      const created = await res.json();
+      // Ensure the new comment appears immediately and delete icon is available
+      setComments((prev) => [created, ...prev]);
+      setNewComment("");
     } catch (err) {
       console.error("Failed to post comment:", err);
     }
@@ -100,16 +121,21 @@ export default function PostDetail() {
   const handleDeleteComment = async (commentId) => {
     if (!window.confirm("Delete this comment?")) return;
 
+    // Optimistic remove
+    const previous = comments;
+    setComments((prev) => prev.filter((c) => c._id !== commentId));
     try {
       const res = await fetch(`${API_BASE}/api/comments/${commentId}`, {
         method: "DELETE",
         credentials: "include",
       });
-      if (res.ok) {
-        setComments((prev) => prev.filter((c) => c._id !== commentId));
+      if (!res.ok) {
+        // Revert if delete failed
+        setComments(previous);
       }
     } catch (err) {
       console.error("Failed to delete comment:", err);
+      setComments(previous);
     }
   };
 
@@ -212,7 +238,7 @@ export default function PostDetail() {
                 </p>
               </div>
 
-              {user && user._id === comment.author?._id && (
+              {user && (currentUserId === (comment.author?._id || comment.author?.id)) && (
                 <button
                   onClick={() => handleDeleteComment(comment._id)}
                   className="text-red-500 hover:text-red-700"
