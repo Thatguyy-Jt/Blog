@@ -35,6 +35,7 @@ function setAuthCookie(res, token) {
     const isProduction = process.env.NODE_ENV === 'production';
     
     // 🚨 IMPORTANT: Use your actual Render backend domain here
+    // Based on your previous code, this is the placeholder:
     const backendDomain = 'blog-v8hp.onrender.com'; 
 
     res.cookie("token", token, {
@@ -42,7 +43,7 @@ function setAuthCookie(res, token) {
       // These three properties are mandatory for cross-origin cookies on mobile
       secure: isProduction,        
       sameSite: isProduction ? "None" : "Lax",   
-      domain: isProduction ? backendDomain : undefined,
+      domain: isProduction ? backendDomain : undefined, // Explicitly set domain in production
       maxAge: 7 * 24 * 60 * 60 * 1000, 
     });
 }
@@ -56,7 +57,7 @@ function clearAuthCookie(res) {
       httpOnly: true,
       secure: isProduction,
       sameSite: isProduction ? "None" : "Lax",
-      domain: isProduction ? backendDomain : undefined,
+      domain: isProduction ? backendDomain : undefined, // Must match setAuthCookie
     });
 }
 module.exports = {
