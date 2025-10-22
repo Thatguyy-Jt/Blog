@@ -82,7 +82,13 @@ async function getPosts(req, res) {
     const { search, category, tag, author, status, page = 1, limit = 10 } = req.query;
     const baseQuery = {};
 
-    if (status) baseQuery.status = status;
+    // Default to only published posts unless status is explicitly specified
+    if (status) {
+      baseQuery.status = status;
+    } else {
+      baseQuery.status = "published";
+    }
+    
     if (author) baseQuery.author = author;
     if (tag) baseQuery.tags = tag;
 
@@ -137,7 +143,7 @@ async function getPosts(req, res) {
   }
 }
 
-// ✅ Get logged-in user's posts
+// ✅ Get logged-in user's posts (including drafts)
 async function getMyPosts(req, res) {
   try {
     const posts = await Post.find({ author: req.user._id })

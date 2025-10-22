@@ -54,6 +54,32 @@ export default function Dashboard() {
     }
   }
 
+  const handleToggleStatus = async (id, currentStatus) => {
+    const newStatus = currentStatus === 'published' ? 'draft' : 'published';
+    
+    try {
+      const res = await fetch(`${API_BASE}/api/posts/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ status: newStatus }),
+      });
+      
+      if (res.ok) {
+        // Update the post status in the UI
+        setPosts(prev => prev.map(p => 
+          p._id === id ? { ...p, status: newStatus } : p
+        ));
+        toast(`Post ${newStatus === 'published' ? 'published' : 'moved to draft'}.`);
+      } else {
+        toast('Failed to update post status.');
+      }
+    } catch (err) {
+      console.error('Failed to toggle status:', err);
+      toast('Failed to update post status.');
+    }
+  }
+
   if (loading) return <div className="flex justify-center pt-20"><Spinner /></div>
 
   return (
@@ -87,7 +113,16 @@ export default function Dashboard() {
                     <img src={post.coverImageUrl || '/placeholder.png'} alt="" className="h-full w-full object-cover rounded-md" />
                   </Link>
                   <div className="flex-1">
-                    <Link to={`/posts/${post._id}`} className="font-medium hover:text-indigo-600 transition">{post.title}</Link>
+                    <div className="flex items-center gap-2 mb-1">
+                      <Link to={`/posts/${post._id}`} className="font-medium hover:text-indigo-600 transition">{post.title}</Link>
+                      <span className={`px-2 py-1 text-xs rounded-full ${
+                        post.status === 'published' 
+                          ? 'bg-green-100 text-green-800' 
+                          : 'bg-yellow-100 text-yellow-800'
+                      }`}>
+                        {post.status}
+                      </span>
+                    </div>
                     <div className="text-sm text-gray-500 line-clamp-2">{post.content}</div>
                     <div className="mt-2 text-xs text-gray-400">{new Date(post.createdAt).toLocaleString()}</div>
                   </div>
@@ -97,6 +132,16 @@ export default function Dashboard() {
                       className="text-sm px-3 py-1 rounded-md border border-indigo-500 text-indigo-500 hover:bg-indigo-50 transition"
                     >
                       Edit
+                    </button>
+                    <button 
+                      onClick={() => handleToggleStatus(post._id, post.status)} 
+                      className={`text-sm px-3 py-1 rounded-md transition ${
+                        post.status === 'published'
+                          ? 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'
+                          : 'bg-green-100 text-green-700 hover:bg-green-200'
+                      }`}
+                    >
+                      {post.status === 'published' ? 'Move to Draft' : 'Publish'}
                     </button>
                     <button 
                       onClick={() => handleDelete(post._id)} 
