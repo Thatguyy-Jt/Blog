@@ -143,15 +143,28 @@ async function getPosts(req, res) {
   }
 }
 
-// ✅ Get logged-in user's posts (including drafts)
+// ✅ Get logged-in user's posts (including drafts) with pagination
 async function getMyPosts(req, res) {
   try {
-    const posts = await Post.find({ author: req.user._id })
-      .populate('author', 'username')
-      .populate('categories', 'name slug')
-      .sort({ createdAt: -1 });
+    const { page = 1, limit = 6 } = req.query;
+    const skip = (Number(page) - 1) * Number(limit);
+    
+    const [posts, total] = await Promise.all([
+      Post.find({ author: req.user._id })
+        .populate('author', 'username')
+        .populate('categories', 'name slug')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(Number(limit)),
+      Post.countDocuments({ author: req.user._id })
+    ]);
 
-    res.json(posts);
+    res.json({
+      posts,
+      total,
+      page: Number(page),
+      pages: Math.ceil(total / Number(limit))
+    });
   } catch (error) {
     console.error("Get my posts error:", error);
     res.status(500).json({ message: "Failed to fetch your posts" });

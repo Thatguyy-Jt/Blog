@@ -11,22 +11,37 @@ export default function Dashboard() {
   const navigate = useNavigate()
   const [posts, setPosts] = useState([])
   const [loading, setLoading] = useState(true)
+  const [page, setPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
 
   useEffect(() => {
     if (!user) {
       navigate('/login')
       return
     }
-    // Fetch posts belonging to the logged-in user
-    fetch(`${API_BASE}/api/posts/mine`, { credentials: 'include' }) 
-      .then((r) => r.ok ? r.json() : [])
-      .then((data) => setPosts(data))
-      .catch((err) => {
-        console.error("Failed to fetch user posts:", err);
-        setPosts([])
+    fetchPosts()
+  }, [user, navigate, page])
+
+  const fetchPosts = async () => {
+    setLoading(true)
+    try {
+      const res = await fetch(`${API_BASE}/api/posts/mine?page=${page}&limit=6`, { 
+        credentials: 'include' 
       })
-      .finally(() => setLoading(false))
-  }, [user, navigate])
+      if (res.ok) {
+        const data = await res.json()
+        setPosts(data.posts || [])
+        setTotalPages(data.pages || 1)
+      } else {
+        setPosts([])
+      }
+    } catch (err) {
+      console.error("Failed to fetch user posts:", err)
+      setPosts([])
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const handleNew = () => navigate('/posts/new')
 
@@ -101,7 +116,14 @@ export default function Dashboard() {
 
         {/* Posts list */}
         <div className="col-span-1 md:col-span-1 rounded-2xl border border-gray-200 p-6 bg-white shadow-sm">
-          <h3 className="font-semibold mb-4">Your posts</h3>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-semibold">Your posts</h3>
+            {totalPages > 1 && (
+              <span className="text-sm text-gray-500">
+                Page {page} of {totalPages}
+              </span>
+            )}
+          </div>
           {posts.length === 0 ? (
             <div className="text-gray-500">No posts yet — start by creating a new post.</div>
           ) : (
@@ -152,6 +174,39 @@ export default function Dashboard() {
                   </div>
                 </div>
               ))}
+            </div>
+          )}
+          
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-4 mt-6 pt-4 border-t border-gray-200">
+              <button
+                onClick={() => setPage(prev => Math.max(1, prev - 1))}
+                disabled={page === 1}
+                className={`px-4 py-2 rounded-lg border text-sm font-medium ${
+                  page === 1
+                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                    : 'bg-white text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 border-gray-300'
+                }`}
+              >
+                Previous
+              </button>
+
+              <span className="text-gray-700 text-sm font-medium">
+                Page {page} of {totalPages}
+              </span>
+
+              <button
+                onClick={() => setPage(prev => Math.min(totalPages, prev + 1))}
+                disabled={page === totalPages}
+                className={`px-4 py-2 rounded-lg border text-sm font-medium ${
+                  page === totalPages
+                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                    : 'bg-white text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 border-gray-300'
+                }`}
+              >
+                Next
+              </button>
             </div>
           )}
         </div>
